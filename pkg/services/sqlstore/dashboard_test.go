@@ -26,7 +26,7 @@ func TestDashboardDataAccess(t *testing.T) {
 
 			Convey("Should return dashboard model", func() {
 				So(savedDash.Title, ShouldEqual, "test dash 23")
-				So(savedDash.Slug, ShouldEqual, "test-dash-23")
+				So(savedDash.Slug, ShouldEqual, "1-test-dash-folder-test-dash-23")
 				So(savedDash.Id, ShouldNotEqual, 0)
 				So(savedDash.IsFolder, ShouldBeFalse)
 				So(savedDash.FolderId, ShouldBeGreaterThan, 0)
@@ -40,7 +40,7 @@ func TestDashboardDataAccess(t *testing.T) {
 
 			Convey("Should be able to get dashboard", func() {
 				query := m.GetDashboardQuery{
-					Slug:  "test-dash-23",
+					Slug:  "1-test-dash-folder-test-dash-23",
 					OrgId: 1,
 				}
 
@@ -48,7 +48,7 @@ func TestDashboardDataAccess(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				So(query.Result.Title, ShouldEqual, "test dash 23")
-				So(query.Result.Slug, ShouldEqual, "test-dash-23")
+				So(query.Result.Slug, ShouldEqual, "1-test-dash-folder-test-dash-23")
 				So(query.Result.IsFolder, ShouldBeFalse)
 			})
 
@@ -79,7 +79,7 @@ func TestDashboardDataAccess(t *testing.T) {
 			})
 
 			Convey("Should not be able to overwrite dashboard in another org", func() {
-				query := m.GetDashboardQuery{Slug: "test-dash-23", OrgId: 1}
+				query := m.GetDashboardQuery{Slug: "1-test-dash-folder-test-dash-23", OrgId: 1}
 				GetDashboard(&query)
 
 				cmd := m.SaveDashboardCommand{
@@ -157,9 +157,10 @@ func TestDashboardDataAccess(t *testing.T) {
 				})
 			})
 
-			Convey("Should not be able to save dashboard with same name", func() {
+			Convey("Should not be able to save dashboard with same name in the same folder", func() {
 				cmd := m.SaveDashboardCommand{
-					OrgId: 1,
+					OrgId:    1,
+					FolderId: savedFolder.Id,
 					Dashboard: simplejson.NewFromAny(map[string]interface{}{
 						"id":    nil,
 						"title": "test dash 23",

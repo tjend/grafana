@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -145,6 +146,11 @@ func (dash *Dashboard) UpdateSlug() {
 
 func SlugifyTitle(title string) string {
 	return slug.Make(strings.ToLower(title))
+}
+
+// UpdateDashboardSlug updated the slug with <slug of folder title>-<slug of dashboard title>
+func (dash *Dashboard) UpdateDashboardSlug(folderTitle string) {
+	dash.Slug = fmt.Sprintf("%s-%s", SlugifyTitle(folderTitle), SlugifyTitle(dash.Title))
 }
 
 //

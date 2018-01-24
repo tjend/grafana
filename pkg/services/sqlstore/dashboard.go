@@ -49,6 +49,47 @@ func SaveDashboard(cmd *m.SaveDashboardCommand) error {
 			if existing.PluginId != "" && cmd.Overwrite == false {
 				return m.UpdatePluginDashboardError{PluginId: existing.PluginId}
 			}
+
+			// if folder title changed, update slug for its dashboards
+			if existing.IsFolder && dash.Title != existing.Title {
+				var dashboards []m.Dashboard
+				err := sess.Where("folder_id=? AND org_id=?", dash.Id, dash.OrgId).Find(&dashboards)
+
+				if err != nil {
+					return err
+				}
+
+				for _, childDashboard := range dashboards {
+					oldSlug := childDashboard.Slug
+					childDashboard.UpdateDashboardSlug(dash.Title)
+
+					if oldSlug != childDashboard.Slug {
+						childDashboard.Version++
+						childDashboard.Data.Set("version", dash.Version)
+
+						if !cmd.UpdatedAt.IsZero() {
+							childDashboard.Updated = cmd.UpdatedAt
+						}
+
+						sess.MustCols("folder_id", "has_acl").Id(childDashboard.Id).Update(childDashboard)
+					}
+				}
+			}
+		}
+
+		if dash.FolderId > 0 {
+			var folder m.Dashboard
+			folderExists, err := sess.Where("id=? AND org_id=?", dash.FolderId, dash.OrgId).Get(&folder)
+
+			if err != nil {
+				return err
+			}
+
+			if folderExists {
+				dash.UpdateDashboardSlug(folder.Title)
+			}
+		} else {
+			dash.UpdateSlug()
 		}
 
 		sameTitleExists, err := sess.Where("org_id=? AND slug=?", dash.OrgId, dash.Slug).Get(&sameTitle)
