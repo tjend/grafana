@@ -10,8 +10,8 @@ awsconfig
 /public_gen
 /public/vendor/npm
 /tmp
-vendor/phantomjs/phantomjs
-vendor/phantomjs/phantomjs.exe
+contrib/phantomjs/phantomjs
+contrib/phantomjs/phantomjs.exe
 profile.out
 coverage.txt
 
